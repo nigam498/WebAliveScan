@@ -1,22 +1,25 @@
+import csv
+from typing import List, Dict, Union
 from lib.common.output import Output
 
+def save_result(path: str, headers: List[str], results: List[Dict[str, Union[str, int]]]) -> bool:
+    """
+    Save results to a CSV file with specified headers.
 
-def save_result(path, headers, results):
-    data = ','.join(headers)
-    data += '\n'
-    for i in results:
-        line = ''
-        for h in headers:
-            line += '"'+str(i[h]).replace('"', '""')+'",'
-        data += line.strip(',') + '\n'
+    Args:
+        path (str): Path to the file where results will be saved.
+        headers (List[str]): List of header names for the CSV file.
+        results (List[Dict[str, Union[str, int]]]): List of dictionaries containing the data to be saved.
+
+    Returns:
+        bool: True if the file was written successfully, False otherwise.
+    """
     try:
-        with open(path, 'w', errors='ignore', newline='') as file:
-            file.write(data)
-            return True
-    except TypeError:
-        with open(path, 'wb') as file:
-            file.write(data.encode())
-            return True
+        with open(path, 'w', newline='', encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=headers, quoting=csv.QUOTE_MINIMAL)
+            writer.writeheader()
+            writer.writerows(results)
+        return True
     except Exception as e:
-        Output().error(e.args)
+        Output().error(f"Failed to save results to {path}: {e}")
         return False
